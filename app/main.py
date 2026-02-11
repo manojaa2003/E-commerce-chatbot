@@ -9,15 +9,12 @@ import sql
 import general_qa
 import fallback_qa
 
-# -------------------- PAGE CONFIG --------------------
 st.set_page_config(
     page_title="E-Commerce AI Assistant",
     page_icon="🛍️",
     layout="centered"
 )
 
-# -------------------- SESSION ISOLATION --------------------
-# Ensures globals inside faq/sql/general_qa are NOT shared across users
 if "modules_loaded" not in st.session_state:
     importlib.reload(faq)
     importlib.reload(sql)
@@ -25,7 +22,6 @@ if "modules_loaded" not in st.session_state:
     importlib.reload(fallback_qa)
     st.session_state.modules_loaded = True
 
-# -------------------- DATA INGESTION --------------------
 if "data_loaded" not in st.session_state:
     faq_path = Path(__file__).parent / "resources/faq_data.csv"
     general_qa_path = Path(__file__).parent / "resources/ecommerce_chatbot_qna.csv"
@@ -35,7 +31,6 @@ if "data_loaded" not in st.session_state:
 
     st.session_state.data_loaded = True
 
-# -------------------- SESSION STATE --------------------
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {
@@ -50,7 +45,6 @@ if "summary" not in st.session_state:
 if "recent_messages" not in st.session_state:
     st.session_state.recent_messages = []
 
-# -------------------- FORCE SQL LOGIC --------------------
 def force_sql(query: str) -> bool:
     q = query.lower()
 
@@ -67,23 +61,50 @@ def force_sql(query: str) -> bool:
         or any(k in q for k in keywords)
     )
 
-# -------------------- UI --------------------
 st.markdown(
     """
     <h1 style="text-align:center;">🛍️ E-Commerce Chatbot</h1>
     <p style="text-align:center; color:gray;">
-    Ask about products, deals, comparisons, or shopping help
+    Ask about products, deals or shopping help
     </p>
     """,
     unsafe_allow_html=True
 )
 
+st.markdown("""
+    <style>
+    div.stButton > button {
+        font-size: 11px !important;
+        padding: 4px 5px !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown("### 💡 Try asking:")
+
+example_queries = [
+    "provide iphone under 1 lakh?",
+    "Find laptops below 80k?",
+    "Which is the best rated shoes?",
+    "What are the payment methods?"
+]
+
+cols = st.columns(2)
+
+for i, example in enumerate(example_queries):
+    if cols[i % 2].button(example):
+        st.session_state.example_query = example
+
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# -------------------- CHAT INPUT --------------------
 query = st.chat_input("Type your shopping question here...")
+
+# Auto-trigger if example button clicked
+if "example_query" in st.session_state:
+    query = st.session_state.example_query
+    del st.session_state.example_query
 
 if query:
     with st.chat_message("user"):
@@ -96,12 +117,11 @@ if query:
     q_clean = query.lower().strip()
 
     try:
-        # -------------------- GRATITUDE SHORT-CIRCUIT --------------------
         if q_clean in {"thanks", "thank you", "ya thank you", "thx"}:
             answer = "😊 You're welcome! Let me know if you need help shopping."
 
         else:
-            # -------------------- ROUTING --------------------
+            # ROUTING
             route_obj = router.router(query)
 
             if force_sql(query):
@@ -111,7 +131,7 @@ if query:
             else:
                 route = route_obj.name
 
-            # -------------------- RESPONSE --------------------
+            # RESPONSE
             if route is None:
                 answer = "🤔 I didn’t quite understand that. Could you rephrase?"
 
@@ -134,13 +154,11 @@ if query:
                 st.session_state.recent_messages = new_recent
 
     except Exception:
-        # -------------------- GLOBAL SAFETY NET --------------------
         answer = (
             "⚠️ I’m temporarily unavailable due to high traffic or system load. "
             "Please try again in a few minutes."
         )
 
-    # -------------------- DISPLAY --------------------
     with st.chat_message("assistant"):
         st.markdown(answer)
 
