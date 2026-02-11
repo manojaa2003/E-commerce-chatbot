@@ -10,9 +10,9 @@ This project goes beyond prompt-based chatbots and focuses on:
 
 ---
 
-# 🔗 Live Links
+# 🔗 Live Link
 
-🔹 **Live App:** https://e-commerce-chatbot-czkqugwt9b9mfwwsk8dfbi.streamlit.app/
+🔹 *Live App:** https://e-commerce-chatbot-czkqugwt9b9mfwwsk8dfbi.streamlit.app/
 ---
 
 # 🚀 Engineering Highlights
