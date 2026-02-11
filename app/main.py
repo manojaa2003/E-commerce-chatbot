@@ -133,10 +133,16 @@ if query:
 
             # RESPONSE
             if route is None:
-                answer = "🤔 I didn’t quite understand that. Could you rephrase?"
+                answer = "I can't assist you with that"
 
             elif route == "faq":
-                answer = faq.faq_chain(query)
+                answer, new_summary, new_recent = fallback_qa.fallback_chain(
+                    query=query,
+                    summary=st.session_state.summary,
+                    recent_msgs=st.session_state.recent_messages
+                )
+                st.session_state.summary = new_summary
+                st.session_state.recent_messages = new_recent
 
             elif route == "sql":
                 answer = sql.sql_chain(query)
