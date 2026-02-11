@@ -99,6 +99,7 @@ general_qa = Route(
     utterances=[
         "who are you?",
         "Who are you?",
+        "name",
         "what is your name?",
         "What can you help me with?",
         "Are you a real person?",
